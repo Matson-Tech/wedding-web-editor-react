@@ -2,9 +2,19 @@
 import React from 'react';
 import { useWedding } from '../contexts/WeddingContext';
 import { EditableText } from './EditableText';
+import { Button } from './ui/button';
+import { Plus, Trash2 } from 'lucide-react';
 
 export const ScheduleSection: React.FC = () => {
-  const { weddingData } = useWedding();
+  const { weddingData, isAuthenticated, addArrayItem, deleteArrayItem } = useWedding();
+
+  const handleAddEvent = () => {
+    addArrayItem('schedule.events', { time: '12:00 PM', event: 'New Event' });
+  };
+
+  const handleDeleteEvent = (index: number) => {
+    deleteArrayItem('schedule.events', index);
+  };
 
   return (
     <section className="bg-gradient-to-br from-cream-200 to-cream-300 py-16 md:py-24">
@@ -58,7 +68,7 @@ export const ScheduleSection: React.FC = () => {
             {/* Events Timeline */}
             <div className="space-y-6">
               {weddingData.schedule.events.map((event, index) => (
-                <div key={index} className="flex items-center space-x-6 border-b border-burgundy-300 pb-4">
+                <div key={index} className="flex items-center space-x-6 border-b border-burgundy-300 pb-4 group">
                   <EditableText path={`schedule.events.${index}.time`}>
                     <div className="font-serif text-xl md:text-2xl font-semibold text-burgundy-800 min-w-[120px]">
                       {event.time}
@@ -66,12 +76,34 @@ export const ScheduleSection: React.FC = () => {
                   </EditableText>
                   
                   <EditableText path={`schedule.events.${index}.event`}>
-                    <div className="font-script text-2xl md:text-3xl text-burgundy-700">
+                    <div className="font-script text-2xl md:text-3xl text-burgundy-700 flex-1">
                       {event.event}
                     </div>
                   </EditableText>
+
+                  {isAuthenticated && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteEvent(index)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               ))}
+
+              {isAuthenticated && (
+                <Button
+                  onClick={handleAddEvent}
+                  variant="outline"
+                  className="w-full mt-6 border-burgundy-400 text-burgundy-700 hover:bg-burgundy-50"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add New Event
+                </Button>
+              )}
             </div>
           </div>
         </div>

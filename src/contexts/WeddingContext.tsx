@@ -82,6 +82,8 @@ export interface WeddingData {
 interface WeddingContextType {
   weddingData: WeddingData;
   updateWeddingData: (path: string, value: any) => void;
+  addArrayItem: (path: string, newItem: any) => void;
+  deleteArrayItem: (path: string, index: number) => void;
   saveData: () => Promise<void>;
   isAuthenticated: boolean;
   setIsAuthenticated: (value: boolean) => void;
@@ -217,6 +219,42 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     });
   };
 
+  const addArrayItem = (path: string, newItem: any) => {
+    setWeddingData(prev => {
+      const newData = { ...prev };
+      const pathArray = path.split('.');
+      let current: any = newData;
+      
+      for (let i = 0; i < pathArray.length - 1; i++) {
+        current = current[pathArray[i]];
+      }
+      
+      const arrayKey = pathArray[pathArray.length - 1];
+      if (Array.isArray(current[arrayKey])) {
+        current[arrayKey] = [...current[arrayKey], newItem];
+      }
+      return newData;
+    });
+  };
+
+  const deleteArrayItem = (path: string, index: number) => {
+    setWeddingData(prev => {
+      const newData = { ...prev };
+      const pathArray = path.split('.');
+      let current: any = newData;
+      
+      for (let i = 0; i < pathArray.length - 1; i++) {
+        current = current[pathArray[i]];
+      }
+      
+      const arrayKey = pathArray[pathArray.length - 1];
+      if (Array.isArray(current[arrayKey])) {
+        current[arrayKey] = current[arrayKey].filter((_, i) => i !== index);
+      }
+      return newData;
+    });
+  };
+
   const saveData = async () => {
     try {
       const jwtToken = localStorage.getItem('jwt_token');
@@ -249,6 +287,8 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     <WeddingContext.Provider value={{
       weddingData,
       updateWeddingData,
+      addArrayItem,
+      deleteArrayItem,
       saveData,
       isAuthenticated,
       setIsAuthenticated,

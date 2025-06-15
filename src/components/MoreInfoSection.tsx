@@ -1,7 +1,7 @@
-
 import React from 'react';
 import { useWedding } from '../contexts/WeddingContext';
 import { EditableText } from './EditableText';
+import { FAQSection } from './FAQSection';
 
 export const MoreInfoSection: React.FC = () => {
   const { weddingData } = useWedding();
@@ -40,52 +40,7 @@ export const MoreInfoSection: React.FC = () => {
             </EditableText>
 
             {/* FAQ Items */}
-            <div className="space-y-10">
-              {/* Gifts */}
-              <div>
-                <EditableText path="moreInfo.sections.gifts.question">
-                  <h3 className="font-script text-2xl md:text-3xl text-cream-200 mb-4">
-                    {weddingData.moreInfo.sections.gifts.question}
-                  </h3>
-                </EditableText>
-                
-                <EditableText path="moreInfo.sections.gifts.answer" isTextarea>
-                  <p className="text-cream-300 leading-relaxed">
-                    {weddingData.moreInfo.sections.gifts.answer}
-                  </p>
-                </EditableText>
-              </div>
-
-              {/* Children */}
-              <div>
-                <EditableText path="moreInfo.sections.children.question">
-                  <h3 className="font-script text-2xl md:text-3xl text-cream-200 mb-4">
-                    {weddingData.moreInfo.sections.children.question}
-                  </h3>
-                </EditableText>
-                
-                <EditableText path="moreInfo.sections.children.answer" isTextarea>
-                  <p className="text-cream-300 leading-relaxed">
-                    {weddingData.moreInfo.sections.children.answer}
-                  </p>
-                </EditableText>
-              </div>
-
-              {/* Dietary */}
-              <div>
-                <EditableText path="moreInfo.sections.dietary.question">
-                  <h3 className="font-script text-2xl md:text-3xl text-cream-200 mb-4">
-                    {weddingData.moreInfo.sections.dietary.question}
-                  </h3>
-                </EditableText>
-                
-                <EditableText path="moreInfo.sections.dietary.answer" isTextarea>
-                  <p className="text-cream-300 leading-relaxed">
-                    {weddingData.moreInfo.sections.dietary.answer}
-                  </p>
-                </EditableText>
-              </div>
-            </div>
+            <FAQSection sections={weddingData.moreInfo.sections} />
 
             {/* Decorative Elements */}
             <div className="flex justify-end space-x-8 mt-12">
