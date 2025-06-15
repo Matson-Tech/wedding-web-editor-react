@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { toast } from 'sonner';
-import { edit } from 'lucide-react';
+import { Edit } from 'lucide-react';
 
 interface EditableTextProps {
   path: string;
@@ -69,7 +69,7 @@ export const EditableText: React.FC<EditableTextProps> = ({
               className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white shadow-md hover:bg-gray-50 h-8 w-8 p-0"
               onClick={handleEdit}
             >
-              <edit className="h-4 w-4 text-gray-600" />
+              <Edit className="h-4 w-4 text-gray-600" />
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
