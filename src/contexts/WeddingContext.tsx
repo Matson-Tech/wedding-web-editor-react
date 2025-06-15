@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import { supabase, getAuthToken, isAuthenticated as checkSupabaseAuth } from '../lib/supabase';
+import { toast } from 'sonner';
 
 export interface WeddingData {
   coupleNames: {
@@ -242,36 +243,149 @@ const defaultWeddingData: WeddingData = {
 
 const WeddingContext = createContext<WeddingContextType | undefined>(undefined);
 
-const user_id = 'duke_elaine_wedding_2030';
-
 export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [weddingData, setWeddingData] = useState<WeddingData>(defaultWeddingData);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadData();
+    checkAuth();
   }, []);
 
-  const loadData = async () => {
+  const checkAuth = async () => {
+    const authStatus = await checkSupabaseAuth();
+    setIsAuthenticated(authStatus);
+    console.log('Auth status:', authStatus);
+    
+    if (authStatus) {
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('Authenticated user:', user);
+      if (user) {
+        setCurrentUserId(user.id);
+        await loadData(user.id);
+      }
+    } else {
+      setCurrentUserId(null);
+      // Use VITE_USER_ID from environment variables for unauthenticated users
+      const defaultUserId = import.meta.env.VITE_USER_ID;
+      console.log('Default user ID from env:', defaultUserId);
+      if (defaultUserId) {
+        await loadData(defaultUserId);
+      } else {
+        console.error('VITE_USER_ID not found in environment variables');
+        setWeddingData(defaultWeddingData);
+      }
+    }
+  };
+
+  const loadData = async (userId: string) => {
     try {
-      const response = await axios.post(
-        'https://kzhbmjygrzjardgruunp.supabase.co/functions/v1/getwebdata',
-        { user_id },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      setIsLoading(true);
+      console.log('Loading data for userId:', userId);
       
-      if (response.data && response.data.data) {
-        setWeddingData(response.data.data);
+      // Always try the edge function first
+      const { data: edgeData, error: edgeError } = await supabase
+        .functions
+        .invoke('getwebdata', {
+          body: { user_id: userId }
+        });
+
+      console.log('Raw edge function response:', edgeData);
+
+      if (edgeError) {
+        console.error('Error fetching from edge function:', edgeError);
+        throw edgeError;
+      }
+
+      // Parse the JSON string response
+      let parsedData;
+      try {
+        parsedData = typeof edgeData === 'string' ? JSON.parse(edgeData) : edgeData;
+        console.log('Parsed edge function data:', parsedData);
+      } catch (parseError) {
+        console.error('Error parsing edge function response:', parseError);
+        throw parseError;
+      }
+
+      // Check if parsedData exists and has the expected structure
+      if (parsedData) {
+        console.log('Parsed data type:', typeof parsedData);
+        console.log('Parsed data keys:', Object.keys(parsedData));
+        
+        // Handle both possible response formats
+        const weddingData = parsedData.web_data || parsedData.data;
+        
+        if (weddingData) {
+          console.log('Found wedding data:', weddingData);
+          setWeddingData(weddingData);
+          
+          // If authenticated, also save to table
+          if (isAuthenticated) {
+            await saveToTable(userId, weddingData);
+          }
+          return;
+        } else {
+          console.log('No wedding data found in parsed response');
+        }
+      } else {
+        console.log('No parsed data received');
+      }
+
+      // If no edge function data, try the table for authenticated users
+      if (isAuthenticated) {
+        const { data: tableData, error: tableError } = await supabase
+          .from('web_entries')
+          .select('*')
+          .eq('user_id', userId)
+          .single();
+
+        console.log('Table data response:', tableData);
+
+        if (tableError && tableError.code !== 'PGRST116') {
+          console.error('Error fetching from table:', tableError);
+          throw tableError;
+        }
+
+        if (tableData && tableData.web_data) {
+          console.log('Setting data from table:', tableData.web_data);
+          setWeddingData(tableData.web_data);
+          return;
+        }
+      }
+
+      // If no data found anywhere, use default data
+      console.log('No data found, using default data');
+      setWeddingData(defaultWeddingData);
+      
+      // If authenticated, save default data to table
+      if (isAuthenticated) {
+        await saveToTable(userId, defaultWeddingData);
       }
     } catch (error) {
-      console.log('Failed to load data, using default:', error);
+      console.error('Failed to load data:', error);
+      toast.error('Failed to load wedding data');
+      setWeddingData(defaultWeddingData);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const saveToTable = async (userId: string, data: WeddingData) => {
+    try {
+      const { error } = await supabase
+        .from('web_entries')
+        .upsert({
+          user_id: userId,
+          web_data: data,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Failed to save to table:', error);
     }
   };
 
@@ -345,32 +459,49 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const saveData = async () => {
+    if (!isAuthenticated || !currentUserId) {
+      toast.error('Please log in to save changes');
+      return;
+    }
+
     try {
-      const jwtToken = localStorage.getItem('jwt_token');
-      if (!jwtToken) {
+      const token = await getAuthToken();
+      if (!token) {
         throw new Error('No authentication token found');
       }
 
-      await axios.post(
-        'https://kzhbmjygrzjardgruunp.supabase.co/functions/v1/webdata',
-        {
-          user_id,
-          data: weddingData,
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${jwtToken}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      // Save to both the edge function and the table
+      const [edgeResult, tableResult] = await Promise.all([
+        supabase.functions.invoke('webdata', {
+          body: {
+            user_id: currentUserId,
+            web_data: weddingData
+          }
+        }),
+        saveToTable(currentUserId, weddingData)
+      ]);
+
+      if (edgeResult.error) throw edgeResult.error;
       
       console.log('Data saved successfully');
+      toast.success('Changes saved successfully');
     } catch (error) {
       console.error('Failed to save data:', error);
+      toast.error('Failed to save changes');
       throw error;
     }
   };
+
+  // Auto-save when wedding data changes
+  useEffect(() => {
+    if (isAuthenticated && currentUserId && !isLoading) {
+      const saveTimeout = setTimeout(() => {
+        saveData();
+      }, 1000); // Debounce save for 1 second
+
+      return () => clearTimeout(saveTimeout);
+    }
+  }, [weddingData, isAuthenticated, currentUserId]);
 
   return (
     <WeddingContext.Provider value={{

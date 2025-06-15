@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useWedding } from '../contexts/WeddingContext';
@@ -13,12 +12,7 @@ import { ContactSection } from '../components/ContactSection';
 import { Button } from '../components/ui/button';
 
 const Index = () => {
-  const { isLoading, isAuthenticated, setIsAuthenticated } = useWedding();
-
-  const handleLogout = () => {
-    localStorage.removeItem('jwt_token');
-    setIsAuthenticated(false);
-  };
+  const { isLoading, isAuthenticated } = useWedding();
 
   if (isLoading) {
     return (
@@ -38,18 +32,20 @@ const Index = () => {
           <Button 
             variant="outline" 
             className="fixed top-4 right-4 z-50 bg-white/90 backdrop-blur-sm hover:bg-white"
+            style={{display: 'none'}}
           >
             Login to Edit
           </Button>
         </Link>
       ) : (
-        <Button 
-          onClick={handleLogout}
-          variant="outline" 
-          className="fixed top-4 right-4 z-50 bg-white/90 backdrop-blur-sm hover:bg-white"
-        >
-          Logout
-        </Button>
+        <Link to="/logout">
+          <Button 
+            variant="outline" 
+            className="fixed top-4 right-4 z-50 bg-white/90 backdrop-blur-sm hover:bg-white"
+          >
+            Logout
+          </Button>
+        </Link>
       )}
       
       <HeroSection />
