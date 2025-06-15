@@ -46,28 +46,28 @@ const Login = () => {
     }
   };
 
-  const handleSignUp = async () => {
-    setIsLoading(true);
+  // const handleSignUp = async () => {
+  //   setIsLoading(true);
 
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
+  //   try {
+  //     const { data, error } = await supabase.auth.signUp({
+  //       email,
+  //       password,
+  //       options: {
+  //         emailRedirectTo: `${window.location.origin}/auth/callback`,
+  //       },
+  //     });
 
-      if (error) throw error;
+  //     if (error) throw error;
 
-      toast.success('Check your email for the confirmation link!');
-    } catch (error: any) {
-      console.error('Sign up error:', error);
-      toast.error(error.message || 'Failed to sign up');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     toast.success('Check your email for the confirmation link!');
+  //   } catch (error: any) {
+  //     console.error('Sign up error:', error);
+  //     toast.error(error.message || 'Failed to sign up');
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const handleResetPassword = async () => {
     if (!email) {
@@ -126,14 +126,6 @@ const Login = () => {
             <div className="flex flex-col space-y-2">
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? 'Logging in...' : 'Login'}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleSignUp}
-                disabled={isLoading}
-              >
-                Sign Up
               </Button>
               <Button
                 type="button"
