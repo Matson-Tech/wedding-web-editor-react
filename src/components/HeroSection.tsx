@@ -2,15 +2,24 @@
 import React from 'react';
 import { useWedding } from '../contexts/WeddingContext';
 import { EditableText } from './EditableText';
+import { EditableImage } from './EditableImage';
 import { Heart, Sparkles, Star } from 'lucide-react';
 
 export const HeroSection: React.FC = () => {
   const { weddingData } = useWedding();
 
   return (
-    <section className="relative min-h-screen bg-gradient-to-br from-rust-600 via-rust-500 to-rust-700 flex items-center justify-center text-white overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center text-white overflow-hidden">
+      {/* Background image */}
+      <EditableImage 
+        path="heroBackground" 
+        className="absolute inset-0 w-full h-full object-cover"
+        alt="Couple background photo"
+      />
+      
       {/* Background overlay */}
-      <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-rust-600/70 via-rust-500/70 to-rust-700/70"></div>
+      <div className="absolute inset-0 bg-black bg-opacity-30"></div>
       
       {/* Floating decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

@@ -7,6 +7,7 @@ export interface WeddingData {
     groom: string;
   };
   tagline: string;
+  heroBackground: string;
   loveStory: {
     title: string;
     content: string;
@@ -113,6 +114,7 @@ const defaultWeddingData: WeddingData = {
     groom: "Duke"
   },
   tagline: "Road to Forever with",
+  heroBackground: "https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&h=800&fit=crop",
   loveStory: {
     title: "Our Love Story",
     content: "Write a paragraph that tells your story as a couple. You can include details like how you met, your journey together, and what makes your relationship unique. This is your chance to share your personality and connect with your guests, giving them a glimpse into your love story and what this special day means to you.",
