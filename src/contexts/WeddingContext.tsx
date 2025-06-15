@@ -39,6 +39,14 @@ export interface WeddingData {
       event: string;
     }[];
   };
+  gallery: {
+    title: string;
+    photos: {
+      id: string;
+      url: string;
+      alt: string;
+    }[];
+  };
   moreInfo: {
     title: string;
     sections: {
@@ -128,6 +136,41 @@ const defaultWeddingData: WeddingData = {
       { time: "06:00 PM", event: "Dinner" },
       { time: "07:00 PM", event: "Reception" },
       { time: "11:00 PM", event: "Cocktails" }
+    ]
+  },
+  gallery: {
+    title: "Our Gallery",
+    photos: [
+      {
+        id: "1",
+        url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=400&fit=crop",
+        alt: "Wedding ceremony moment"
+      },
+      {
+        id: "2", 
+        url: "https://images.unsplash.com/photo-1606800052052-a08af7148866?w=400&h=400&fit=crop",
+        alt: "Couple portrait"
+      },
+      {
+        id: "3",
+        url: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=400&h=400&fit=crop",
+        alt: "Wedding rings"
+      },
+      {
+        id: "4",
+        url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=400&fit=crop",
+        alt: "Wedding bouquet"
+      },
+      {
+        id: "5",
+        url: "https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?w=400&h=400&fit=crop",
+        alt: "Wedding celebration"
+      },
+      {
+        id: "6",
+        url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=400&h=400&fit=crop",
+        alt: "Wedding venue"
+      }
     ]
   },
   moreInfo: {
@@ -256,6 +299,24 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     });
   };
 
+  const deleteArrayItemById = (path: string, id: string) => {
+    setWeddingData(prev => {
+      const newData = { ...prev };
+      const pathArray = path.split('.');
+      let current: any = newData;
+      
+      for (let i = 0; i < pathArray.length - 1; i++) {
+        current = current[pathArray[i]];
+      }
+      
+      const arrayKey = pathArray[pathArray.length - 1];
+      if (Array.isArray(current[arrayKey])) {
+        current[arrayKey] = current[arrayKey].filter((item: any) => item.id !== id);
+      }
+      return newData;
+    });
+  };
+
   const saveData = async () => {
     try {
       const jwtToken = localStorage.getItem('jwt_token');
@@ -290,6 +351,7 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       updateWeddingData,
       addArrayItem,
       deleteArrayItem,
+      deleteArrayItemById,
       saveData,
       isAuthenticated,
       setIsAuthenticated,

@@ -58,6 +58,25 @@ const Gallery = () => {
     }
   };
 
+  // Safety check to prevent runtime errors
+  if (!weddingData.gallery || !weddingData.gallery.photos) {
+    return (
+      <div className="min-h-screen bg-cream-50 flex items-center justify-center">
+        <div className="text-center">
+          <Camera className="w-16 h-16 text-rust-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-serif text-rust-700">Gallery not available</h2>
+          <p className="text-rust-600">Please check back later.</p>
+          <Link to="/">
+            <Button variant="outline" className="mt-4">
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Home
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-cream-50">
       {/* Header */}

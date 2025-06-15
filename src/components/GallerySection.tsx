@@ -9,6 +9,11 @@ import { Camera, Heart, Star } from 'lucide-react';
 export const GallerySection: React.FC = () => {
   const { weddingData } = useWedding();
 
+  // Safety check to prevent runtime errors
+  if (!weddingData.gallery || !weddingData.gallery.photos) {
+    return null;
+  }
+
   // Show only first 6 photos for home page
   const previewPhotos = weddingData.gallery.photos.slice(0, 6);
 
