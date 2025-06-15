@@ -84,6 +84,7 @@ interface WeddingContextType {
   updateWeddingData: (path: string, value: any) => void;
   addArrayItem: (path: string, newItem: any) => void;
   deleteArrayItem: (path: string, index: number) => void;
+  deleteArrayItemById: (path: string, id: string) => void;
   saveData: () => Promise<void>;
   isAuthenticated: boolean;
   setIsAuthenticated: (value: boolean) => void;

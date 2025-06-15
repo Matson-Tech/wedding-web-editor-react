@@ -6,6 +6,7 @@ import { HeroSection } from '../components/HeroSection';
 import { LoveStorySection } from '../components/LoveStorySection';
 import { AboutWeddingSection } from '../components/AboutWeddingSection';
 import { ScheduleSection } from '../components/ScheduleSection';
+import { GallerySection } from '../components/GallerySection';
 import { MoreInfoSection } from '../components/MoreInfoSection';
 import { ContactSection } from '../components/ContactSection';
 import { Button } from '../components/ui/button';
@@ -54,6 +55,7 @@ const Index = () => {
       <LoveStorySection />
       <AboutWeddingSection />
       <ScheduleSection />
+      <GallerySection />
       <MoreInfoSection />
       <ContactSection />
     </div>
