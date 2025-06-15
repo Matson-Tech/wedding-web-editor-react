@@ -13,8 +13,9 @@ export const HeroSection: React.FC = () => {
       {/* Background image */}
       <EditableImage 
         path="heroBackground" 
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full"
         alt="Couple background photo"
+        asBackground={true}
       />
       
       {/* Background overlay */}
