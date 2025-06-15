@@ -3,7 +3,7 @@ import React from 'react';
 import { useWedding } from '../contexts/WeddingContext';
 import { EditableText } from './EditableText';
 import { Button } from './ui/button';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Clock, Bell, Music, Utensils } from 'lucide-react';
 
 export const ScheduleSection: React.FC = () => {
   const { weddingData, isAuthenticated, addArrayItem, deleteArrayItem } = useWedding();
@@ -16,35 +16,78 @@ export const ScheduleSection: React.FC = () => {
     deleteArrayItem('schedule.events', index);
   };
 
+  const getEventIcon = (eventName: string) => {
+    const lowerEvent = eventName.toLowerCase();
+    if (lowerEvent.includes('ceremony')) return <Bell className="w-5 h-5" />;
+    if (lowerEvent.includes('dinner') || lowerEvent.includes('meal')) return <Utensils className="w-5 h-5" />;
+    if (lowerEvent.includes('reception') || lowerEvent.includes('party') || lowerEvent.includes('dance')) return <Music className="w-5 h-5" />;
+    if (lowerEvent.includes('cocktail')) return <Utensils className="w-5 h-5" />;
+    return <Clock className="w-5 h-5" />;
+  };
+
   return (
-    <section className="bg-gradient-to-br from-cream-200 to-cream-300 py-16 md:py-24">
-      <div className="container mx-auto px-4">
+    <section className="bg-gradient-to-br from-cream-200 to-cream-300 py-16 md:py-24 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 opacity-5">
+        <Clock className="absolute top-20 right-20 w-24 h-24 text-burgundy-600" />
+        <Music className="absolute bottom-32 left-16 w-16 h-16 text-burgundy-700" />
+        <Bell className="absolute top-1/3 left-1/4 w-12 h-12 text-burgundy-600" />
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           
           {/* Cathedral Illustration */}
-          <div className="flex justify-center lg:justify-start">
+          <div className="flex justify-center lg:justify-start relative">
             <div className="relative">
-              {/* Cathedral SVG */}
+              {/* Enhanced Cathedral SVG with more details */}
               <svg className="w-80 h-96 text-burgundy-700" fill="currentColor" viewBox="0 0 300 400">
-                {/* Cathedral structure - simplified */}
+                {/* Main cathedral structure */}
                 <path d="M50 350 L50 150 L75 100 L125 80 L175 80 L225 100 L250 150 L250 350 Z"/>
                 <path d="M75 350 L75 180 L100 160 L200 160 L225 180 L225 350"/>
-                <circle cx="150" cy="120" r="25"/>
-                <rect x="125" y="200" width="50" height="80"/>
-                <rect x="90" y="220" width="20" height="60"/>
-                <rect x="190" y="220" width="20" height="60"/>
-                {/* Small tower */}
+                
+                {/* Rose window */}
+                <circle cx="150" cy="120" r="25" stroke="currentColor" strokeWidth="2" fill="none"/>
+                <circle cx="150" cy="120" r="15" stroke="currentColor" strokeWidth="1" fill="none"/>
+                <circle cx="150" cy="120" r="8" fill="currentColor"/>
+                
+                {/* Main doors */}
+                <rect x="125" y="200" width="50" height="80" rx="25"/>
+                
+                {/* Side windows */}
+                <rect x="90" y="220" width="20" height="60" rx="10"/>
+                <rect x="190" y="220" width="20" height="60" rx="10"/>
+                
+                {/* Bell tower */}
                 <path d="M275 350 L275 200 L285 190 L295 200 L295 350"/>
+                <circle cx="285" cy="180" r="5"/>
+                
+                {/* Spires */}
+                <path d="M145 80 L150 60 L155 80"/>
+                <path d="M280 190 L285 170 L290 190"/>
+                
                 {/* Cross */}
-                <path d="M148 90 L152 90 L152 105 L148 105 Z"/>
-                <path d="M145 95 L155 95 L155 99 L145 99 Z"/>
+                <path d="M148 60 L152 60 L152 75 L148 75 Z"/>
+                <path d="M145 65 L155 65 L155 69 L145 69 Z"/>
+                
+                {/* Decorative elements */}
+                <rect x="60" y="300" width="8" height="50"/>
+                <rect x="232" y="300" width="8" height="50"/>
               </svg>
               
-              {/* Flying bird */}
-              <div className="absolute top-10 right-10">
+              {/* Flying elements around cathedral */}
+              <div className="absolute top-10 right-10 animate-bounce" style={{ animationDelay: '0.5s' }}>
                 <svg className="w-8 h-6 text-burgundy-600" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M2 12c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2-2 .9-2 2zm10-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm8 8c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2-2 .9-2 2z"/>
+                  <path d="M12 2L8 6h8l-4-4zm0 4c-2 0-4 1-4 3v2c0 1 1 2 2 2h4c1 0 2-1 2-2V9c0-2-2-3-4-3z"/>
                 </svg>
+              </div>
+              
+              <div className="absolute bottom-20 right-20 animate-pulse">
+                <Bell className="w-6 h-6 text-burgundy-500 opacity-60" />
+              </div>
+              
+              <div className="absolute top-1/3 left-10 animate-bounce" style={{ animationDelay: '1s' }}>
+                <Music className="w-5 h-5 text-burgundy-600 opacity-70" />
               </div>
             </div>
           </div>
@@ -59,7 +102,8 @@ export const ScheduleSection: React.FC = () => {
               </EditableText>
               
               <EditableText path="schedule.date">
-                <p className="font-script text-xl md:text-2xl text-burgundy-600">
+                <p className="font-script text-xl md:text-2xl text-burgundy-600 flex items-center">
+                  <Clock className="w-6 h-6 mr-2" />
                   {weddingData.schedule.date}
                 </p>
               </EditableText>
@@ -68,12 +112,17 @@ export const ScheduleSection: React.FC = () => {
             {/* Events Timeline */}
             <div className="space-y-6">
               {weddingData.schedule.events.map((event, index) => (
-                <div key={index} className="flex items-center space-x-6 border-b border-burgundy-300 pb-4 group">
-                  <EditableText path={`schedule.events.${index}.time`}>
-                    <div className="font-serif text-xl md:text-2xl font-semibold text-burgundy-800 min-w-[120px]">
-                      {event.time}
+                <div key={index} className="flex items-center space-x-6 border-b border-burgundy-300 pb-4 group bg-white/50 p-4 rounded-lg hover:bg-white/70 transition-colors duration-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="text-burgundy-600">
+                      {getEventIcon(event.event)}
                     </div>
-                  </EditableText>
+                    <EditableText path={`schedule.events.${index}.time`}>
+                      <div className="font-serif text-xl md:text-2xl font-semibold text-burgundy-800 min-w-[120px]">
+                        {event.time}
+                      </div>
+                    </EditableText>
+                  </div>
                   
                   <EditableText path={`schedule.events.${index}.event`}>
                     <div className="font-script text-2xl md:text-3xl text-burgundy-700 flex-1">

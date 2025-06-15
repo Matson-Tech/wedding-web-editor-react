@@ -2,13 +2,21 @@
 import React from 'react';
 import { useWedding } from '../contexts/WeddingContext';
 import { EditableText } from './EditableText';
+import { MapPin, Shirt, Car, Clock, Users, Gift } from 'lucide-react';
 
 export const AboutWeddingSection: React.FC = () => {
   const { weddingData } = useWedding();
 
   return (
-    <section className="bg-gradient-to-b from-cream-300 to-cream-400 py-16 md:py-24">
-      <div className="container mx-auto px-4">
+    <section className="bg-gradient-to-b from-cream-300 to-cream-400 py-16 md:py-24 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 opacity-5">
+        <Gift className="absolute top-20 left-10 w-20 h-20 text-burgundy-600" />
+        <Users className="absolute bottom-20 right-10 w-16 h-16 text-burgundy-700" />
+        <Clock className="absolute top-1/2 left-20 w-12 h-12 text-burgundy-600" />
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
         
         {/* Header */}
         <div className="text-center mb-16">
@@ -23,18 +31,27 @@ export const AboutWeddingSection: React.FC = () => {
               {weddingData.aboutWedding.subtitle}
             </p>
           </EditableText>
+
+          {/* Decorative divider with icons */}
+          <div className="flex items-center justify-center space-x-4 mt-8">
+            <div className="w-8 h-px bg-burgundy-600"></div>
+            <Gift className="w-6 h-6 text-burgundy-600" />
+            <div className="w-8 h-px bg-burgundy-600"></div>
+          </div>
         </div>
 
         {/* Three Columns */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
           
           {/* Getting There */}
-          <div className="text-center space-y-6">
-            {/* Building Icon */}
-            <div className="flex justify-center mb-6">
-              <svg className="w-20 h-24 text-burgundy-600" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M3 21h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18V7H3v2zm0-4h18V3H3v2z"/>
-              </svg>
+          <div className="text-center space-y-6 group">
+            {/* Icon with decorative border */}
+            <div className="flex justify-center mb-6 relative">
+              <div className="bg-burgundy-100 p-6 rounded-full group-hover:bg-burgundy-200 transition-colors duration-300">
+                <MapPin className="w-12 h-12 text-burgundy-600" />
+              </div>
+              <div className="absolute -top-2 -right-2 w-4 h-4 bg-burgundy-300 rounded-full opacity-60"></div>
+              <div className="absolute -bottom-2 -left-2 w-3 h-3 border-2 border-burgundy-400 rounded-full"></div>
             </div>
             
             <EditableText path="aboutWedding.sections.gettingThere.title">
@@ -51,12 +68,14 @@ export const AboutWeddingSection: React.FC = () => {
           </div>
 
           {/* What to Wear */}
-          <div className="text-center space-y-6">
-            {/* Dancing Couple Icon */}
-            <div className="flex justify-center mb-6">
-              <svg className="w-20 h-24 text-burgundy-600" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8.5 5c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM3.5 11c-.8 0-1.5.7-1.5 1.5S2.7 14 3.5 14 5 13.3 5 12.5 4.3 11 3.5 11zm17 0c-.8 0-1.5.7-1.5 1.5s.7 1.5 1.5 1.5 1.5-.7 1.5-1.5-.7-1.5-1.5-1.5z"/>
-              </svg>
+          <div className="text-center space-y-6 group">
+            {/* Icon with decorative border */}
+            <div className="flex justify-center mb-6 relative">
+              <div className="bg-burgundy-100 p-6 rounded-full group-hover:bg-burgundy-200 transition-colors duration-300">
+                <Shirt className="w-12 h-12 text-burgundy-600" />
+              </div>
+              <div className="absolute -top-2 -right-2 w-4 h-4 bg-burgundy-300 rounded-full opacity-60"></div>
+              <div className="absolute -bottom-2 -left-2 w-3 h-3 border-2 border-burgundy-400 rounded-full"></div>
             </div>
             
             <EditableText path="aboutWedding.sections.whatToWear.title">
@@ -73,12 +92,14 @@ export const AboutWeddingSection: React.FC = () => {
           </div>
 
           {/* Parking Options */}
-          <div className="text-center space-y-6">
-            {/* Luggage Icon */}
-            <div className="flex justify-center mb-6">
-              <svg className="w-20 h-24 text-burgundy-600" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M9.5 16c0 .8.7 1.5 1.5 1.5s1.5-.7 1.5-1.5-.7-1.5-1.5-1.5-1.5.7-1.5 1.5zm8.5 0c0 .8.7 1.5 1.5 1.5s1.5-.7 1.5-1.5-.7-1.5-1.5-1.5-1.5.7-1.5 1.5zM17 6H7c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/>
-              </svg>
+          <div className="text-center space-y-6 group">
+            {/* Icon with decorative border */}
+            <div className="flex justify-center mb-6 relative">
+              <div className="bg-burgundy-100 p-6 rounded-full group-hover:bg-burgundy-200 transition-colors duration-300">
+                <Car className="w-12 h-12 text-burgundy-600" />
+              </div>
+              <div className="absolute -top-2 -right-2 w-4 h-4 bg-burgundy-300 rounded-full opacity-60"></div>
+              <div className="absolute -bottom-2 -left-2 w-3 h-3 border-2 border-burgundy-400 rounded-full"></div>
             </div>
             
             <EditableText path="aboutWedding.sections.parkingOptions.title">
@@ -93,6 +114,17 @@ export const AboutWeddingSection: React.FC = () => {
               </p>
             </EditableText>
           </div>
+        </div>
+
+        {/* Bottom decorative elements */}
+        <div className="flex justify-center items-center space-x-8 mt-16">
+          <Clock className="w-8 h-8 text-burgundy-500 opacity-60" />
+          <div className="flex space-x-2">
+            <div className="w-2 h-2 bg-burgundy-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-burgundy-600 rounded-full"></div>
+            <div className="w-2 h-2 bg-burgundy-500 rounded-full"></div>
+          </div>
+          <Users className="w-8 h-8 text-burgundy-500 opacity-60" />
         </div>
       </div>
     </section>
