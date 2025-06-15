@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -45,6 +44,15 @@ export interface WeddingData {
       id: string;
       url: string;
       alt: string;
+    }[];
+  };
+  wishes: {
+    title: string;
+    list: {
+      id: string;
+      name: string;
+      message: string;
+      timestamp: string;
     }[];
   };
   moreInfo: {
@@ -170,6 +178,23 @@ const defaultWeddingData: WeddingData = {
         id: "6",
         url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=400&h=400&fit=crop",
         alt: "Wedding venue"
+      }
+    ]
+  },
+  wishes: {
+    title: "Guest Wishes",
+    list: [
+      {
+        id: "1",
+        name: "Sarah Johnson",
+        message: "Wishing you both a lifetime of love and happiness! Can't wait to celebrate with you.",
+        timestamp: "2024-12-15T10:30:00Z"
+      },
+      {
+        id: "2",
+        name: "Mike & Lisa",
+        message: "So excited for your special day! You two are perfect together.",
+        timestamp: "2024-12-14T15:45:00Z"
       }
     ]
   },

@@ -7,6 +7,7 @@ import { LoveStorySection } from '../components/LoveStorySection';
 import { AboutWeddingSection } from '../components/AboutWeddingSection';
 import { ScheduleSection } from '../components/ScheduleSection';
 import { GallerySection } from '../components/GallerySection';
+import { WishesSection } from '../components/WishesSection';
 import { MoreInfoSection } from '../components/MoreInfoSection';
 import { ContactSection } from '../components/ContactSection';
 import { Button } from '../components/ui/button';
@@ -56,6 +57,7 @@ const Index = () => {
       <AboutWeddingSection />
       <ScheduleSection />
       <GallerySection />
+      <WishesSection />
       <MoreInfoSection />
       <ContactSection />
     </div>
