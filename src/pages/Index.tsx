@@ -1,12 +1,37 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React from 'react';
+import { useWedding } from '../contexts/WeddingContext';
+import { HeroSection } from '../components/HeroSection';
+import { LoveStorySection } from '../components/LoveStorySection';
+import { AboutWeddingSection } from '../components/AboutWeddingSection';
+import { ScheduleSection } from '../components/ScheduleSection';
+import { MoreInfoSection } from '../components/MoreInfoSection';
+import { ContactSection } from '../components/ContactSection';
+import { LoginModal } from '../components/LoginModal';
 
 const Index = () => {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+  const { isLoading } = useWedding();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-rust-500">
+        <div className="text-center text-cream-100">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-cream-100 mx-auto mb-4"></div>
+          <p className="font-serif text-xl">Loading wedding details...</p>
+        </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen">
+      <LoginModal />
+      <HeroSection />
+      <LoveStorySection />
+      <AboutWeddingSection />
+      <ScheduleSection />
+      <MoreInfoSection />
+      <ContactSection />
     </div>
   );
 };
