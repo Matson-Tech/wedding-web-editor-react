@@ -9,20 +9,28 @@ const Logout: React.FC = () => {
   useEffect(() => {
     const handleLogout = async () => {
       try {
+        // Sign out from Supabase
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
         
+        // Clear any local storage items
+        localStorage.removeItem('jwt_token');
+        
+        // Show success message
         toast.success('Logged out successfully');
-        navigate('/login');
+        
+        // Force navigation to login page
+        window.location.href = '/login';
       } catch (error) {
         console.error('Error logging out:', error);
         toast.error('Failed to log out');
-        navigate('/login');
+        // Even if there's an error, try to redirect to login
+        window.location.href = '/login';
       }
     };
 
     handleLogout();
-  }, [navigate]);
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
