@@ -19,7 +19,7 @@ export const HeroSection: React.FC = () => {
       />
       
       {/* Background overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-rust-600/70 via-rust-500/70 to-rust-700/70"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-rust-600/70 via-rust-500/70 to-rust-700/70" ></div>
       <div className="absolute inset-0 bg-black bg-opacity-30"></div>
       
       {/* Floating decorative elements */}
