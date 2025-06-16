@@ -9,6 +9,10 @@ export interface WeddingData {
   };
   tagline: string;
   heroBackground: string;
+  backgroundMusic?: {
+    url: string;
+    title: string;
+  };
   loveStory: {
     title: string;
     content: string;
@@ -116,6 +120,10 @@ const defaultWeddingData: WeddingData = {
   },
   tagline: "Road to Forever with",
   heroBackground: "https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&h=800&fit=crop",
+  backgroundMusic: {
+    url: "",
+    title: ""
+  },
   loveStory: {
     title: "Our Love Story",
     content: "Write a paragraph that tells your story as a couple. You can include details like how you met, your journey together, and what makes your relationship unique. This is your chance to share your personality and connect with your guests, giving them a glimpse into your love story and what this special day means to you.",
@@ -333,11 +341,6 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (weddingData) {
           console.log('Found wedding data:', weddingData);
           setWeddingData(weddingData);
-          
-          // If authenticated, also save to table
-          if (isAuthenticated) {
-            await saveToTable(userId, weddingData);
-          }
           return;
         } else {
           console.log('No wedding data found in parsed response');
@@ -368,18 +371,22 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
       }
 
-      // If no data found anywhere, use default data
-      console.log('No data found, using default data');
-      setWeddingData(defaultWeddingData);
-      
-      // If authenticated, save default data to table
-      if (isAuthenticated) {
-        await saveToTable(userId, defaultWeddingData);
+      // If no data found anywhere and user is not authenticated, use default data
+      if (!isAuthenticated) {
+        console.log('No data found and user not authenticated, using default data');
+        setWeddingData(defaultWeddingData);
+      } else {
+        // If authenticated but no data found, show error
+        console.error('No data found for authenticated user');
+        toast.error('No wedding data found. Please try again later.');
       }
     } catch (error) {
       console.error('Failed to load data:', error);
-      toast.error('Failed to load wedding data');
-      setWeddingData(defaultWeddingData);
+      toast.error('Failed to load wedding data. Please try again later.');
+      // Only use default data for non-authenticated users
+      if (!isAuthenticated) {
+        setWeddingData(defaultWeddingData);
+      }
     } finally {
       setIsLoading(false);
     }

@@ -1,7 +1,7 @@
-
 import React from 'react';
 import { useWedding } from '../contexts/WeddingContext';
 import { EditableText } from './EditableText';
+import { EditableImage } from './EditableImage';
 import { Camera, MapPin, Calendar } from 'lucide-react';
 
 export const LoveStorySection: React.FC = () => {
@@ -65,9 +65,9 @@ export const LoveStorySection: React.FC = () => {
             <div className="absolute -top-2 -right-6 w-6 h-6 border-2 border-cream-300 rotate-45 opacity-50"></div>
             
             <div className="bg-rust-600 p-4 rounded-lg shadow-2xl relative">
-              <img 
-                src="/lovable-uploads/d5db2c85-f185-44a6-a1f6-9993d86d9755.png"
-                alt={weddingData.loveStory.imageAlt}
+              <EditableImage 
+                path="loveStory.image"
+                alt={weddingData.loveStory.imageAlt || "Our love story"}
                 className="w-full h-96 md:h-[500px] object-cover rounded"
               />
               

@@ -12,22 +12,13 @@ export const MoreInfoSection: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           
           {/* Traveler Illustration */}
-          <div className="flex justify-center lg:justify-start">
+          <div className="flex justify-end lg:justify-start">
             <div className="relative">
-              {/* Man with suitcase SVG */}
-              <svg className="w-64 h-80 text-rust-800" fill="currentColor" viewBox="0 0 200 300">
-                {/* Man figure - simplified */}
-                <circle cx="100" cy="40" r="20"/>
-                <rect x="85" y="60" width="30" height="60"/>
-                <rect x="80" y="120" width="15" height="50"/>
-                <rect x="105" y="120" width="15" height="50"/>
-                <rect x="90" y="55" width="20" height="40"/>
-                {/* Suitcase */}
-                <rect x="130" y="200" width="40" height="60" rx="5"/>
-                <rect x="135" y="195" width="30" height="10" rx="2"/>
-                <circle cx="140" cy="230" r="3"/>
-                <circle cx="160" cy="230" r="3"/>
-              </svg>
+              <img 
+                src="/UI/contact-img.png" 
+                alt="More Information Illustration" 
+                className="w-80 h-auto object-contain"
+              />
             </div>
           </div>
 

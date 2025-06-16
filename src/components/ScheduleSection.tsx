@@ -37,58 +37,29 @@ export const ScheduleSection: React.FC = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           
-          {/* Cathedral Illustration */}
+          {/* Cathedral Image */}
           <div className="flex justify-center lg:justify-start relative">
             <div className="relative">
-              {/* Enhanced Cathedral SVG with more details */}
-              <svg className="w-80 h-96 text-burgundy-700" fill="currentColor" viewBox="0 0 300 400">
-                {/* Main cathedral structure */}
-                <path d="M50 350 L50 150 L75 100 L125 80 L175 80 L225 100 L250 150 L250 350 Z"/>
-                <path d="M75 350 L75 180 L100 160 L200 160 L225 180 L225 350"/>
-                
-                {/* Rose window */}
-                <circle cx="150" cy="120" r="25" stroke="currentColor" strokeWidth="2" fill="none"/>
-                <circle cx="150" cy="120" r="15" stroke="currentColor" strokeWidth="1" fill="none"/>
-                <circle cx="150" cy="120" r="8" fill="currentColor"/>
-                
-                {/* Main doors */}
-                <rect x="125" y="200" width="50" height="80" rx="25"/>
-                
-                {/* Side windows */}
-                <rect x="90" y="220" width="20" height="60" rx="10"/>
-                <rect x="190" y="220" width="20" height="60" rx="10"/>
-                
-                {/* Bell tower */}
-                <path d="M275 350 L275 200 L285 190 L295 200 L295 350"/>
-                <circle cx="285" cy="180" r="5"/>
-                
-                {/* Spires */}
-                <path d="M145 80 L150 60 L155 80"/>
-                <path d="M280 190 L285 170 L290 190"/>
-                
-                {/* Cross */}
-                <path d="M148 60 L152 60 L152 75 L148 75 Z"/>
-                <path d="M145 65 L155 65 L155 69 L145 69 Z"/>
-                
-                {/* Decorative elements */}
-                <rect x="60" y="300" width="8" height="50"/>
-                <rect x="232" y="300" width="8" height="50"/>
-              </svg>
+              <img 
+                src="/UI/schedule-img.png" 
+                alt="Wedding Cathedral" 
+                className="w-80 h-96 object-fit"
+              />
               
-              {/* Flying elements around cathedral */}
-              <div className="absolute top-10 right-10 animate-bounce" style={{ animationDelay: '0.5s' }}>
+              {/* Decorative elements */}
+              {/* <div className="absolute top-10 right-10 animate-bounce" style={{ animationDelay: '0.5s' }}>
                 <svg className="w-8 h-6 text-burgundy-600" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2L8 6h8l-4-4zm0 4c-2 0-4 1-4 3v2c0 1 1 2 2 2h4c1 0 2-1 2-2V9c0-2-2-3-4-3z"/>
                 </svg>
-              </div>
+              </div> */}
               
-              <div className="absolute bottom-20 right-20 animate-pulse">
+              {/* <div className="absolute bottom-20 right-20 animate-pulse">
                 <Bell className="w-6 h-6 text-burgundy-500 opacity-60" />
-              </div>
+              </div> */}
               
-              <div className="absolute top-1/3 left-10 animate-bounce" style={{ animationDelay: '1s' }}>
+              {/* <div className="absolute top-1/3 left-10 animate-bounce" style={{ animationDelay: '1s' }}>
                 <Music className="w-5 h-5 text-burgundy-600 opacity-70" />
-              </div>
+              </div> */}
             </div>
           </div>
 
