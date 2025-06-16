@@ -1,16 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useWedding } from '../contexts/WeddingContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { toast } from 'sonner';
-import { Edit, Image } from 'lucide-react';
+import { Edit, Image, Upload, CheckCircle2, XCircle } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import imageCompression from 'browser-image-compression';
 
 interface EditableImageProps {
   path: string;
   className?: string;
   alt: string;
   asBackground?: boolean;
+}
+
+interface FileUploadStatus {
+  file: File;
+  progress: number;
+  status: 'pending' | 'compressing' | 'uploading' | 'success' | 'error';
+  error?: string;
+  originalSize?: number;
+  compressedSize?: number;
 }
 
 export const EditableImage: React.FC<EditableImageProps> = ({ 
@@ -21,8 +32,10 @@ export const EditableImage: React.FC<EditableImageProps> = ({
 }) => {
   const { isAuthenticated, weddingData, updateWeddingData, saveData } = useWedding();
   const [isOpen, setIsOpen] = useState(false);
-  const [tempUrl, setTempUrl] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileStatus, setFileStatus] = useState<FileUploadStatus | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getValue = (data: any, path: string) => {
     return path.split('.').reduce((obj, key) => obj?.[key], data);
@@ -31,27 +44,145 @@ export const EditableImage: React.FC<EditableImageProps> = ({
   const currentUrl = getValue(weddingData, path);
 
   const handleEdit = () => {
-    setTempUrl(currentUrl || '');
+    setSelectedFile(null);
+    setFileStatus(null);
     setIsOpen(true);
   };
 
-  const handleSave = async () => {
+  const compressImage = async (file: File): Promise<File> => {
+    const options = {
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1920,
+      useWebWorker: true,
+      fileType: 'image/jpeg',
+    };
+
     try {
-      setIsSaving(true);
-      updateWeddingData(path, tempUrl);
-      await saveData();
-      setIsOpen(false);
+      const compressedFile = await imageCompression(file, options);
+      return compressedFile;
     } catch (error) {
-      toast.error('Failed to save changes');
-      console.error('Save error:', error);
+      console.error('Compression error:', error);
+      throw new Error('Failed to compress image');
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file
+    if (!file.type.startsWith('image/')) {
+      toast.error(`${file.name} is not an image file`);
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(`${file.name} is larger than 5MB`);
+      return;
+    }
+
+    setSelectedFile(file);
+    setFileStatus({
+      file,
+      progress: 0,
+      status: 'pending',
+      originalSize: file.size
+    });
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      toast.error('Please select an image');
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+
+      // Update status to compressing
+      setFileStatus(prev => prev ? { ...prev, status: 'compressing' } : null);
+
+      // Compress the image
+      const compressedFile = await compressImage(selectedFile);
+      
+      // Update status with compression info
+      setFileStatus(prev => prev ? { 
+        ...prev, 
+        file: compressedFile,
+        compressedSize: compressedFile.size,
+        status: 'uploading' 
+      } : null);
+
+      // Create a unique file name
+      const fileExt = 'jpg'; // Always use jpg after compression
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = fileName;
+
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('gallery')
+        .upload(filePath, compressedFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('gallery')
+        .getPublicUrl(filePath);
+
+      // Update status to success
+      setFileStatus(prev => prev ? { ...prev, status: 'success', progress: 100 } : null);
+
+      // Save the URL to wedding data
+      updateWeddingData(path, publicUrl);
+      await saveData();
+      
+      setIsOpen(false);
+      toast.success('Image uploaded successfully!');
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      setFileStatus(prev => prev ? { ...prev, status: 'error', error: error.message } : null);
+      toast.error(error.message || 'Failed to upload image');
     } finally {
-      setIsSaving(false);
+      setIsUploading(false);
+      setSelectedFile(null);
+      setFileStatus(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
   const handleCancel = () => {
-    setTempUrl(currentUrl || '');
+    setSelectedFile(null);
+    setFileStatus(null);
     setIsOpen(false);
+  };
+
+  const getStatusIcon = (status: FileUploadStatus['status']) => {
+    switch (status) {
+      case 'success':
+        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+      case 'error':
+        return <XCircle className="h-4 w-4 text-red-500" />;
+      case 'uploading':
+      case 'compressing':
+        return <div className="h-4 w-4 animate-spin rounded-full border-2 border-rust-600 border-t-transparent" />;
+      default:
+        return <Image className="h-4 w-4 text-gray-400" />;
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   if (asBackground) {
@@ -86,38 +217,68 @@ export const EditableImage: React.FC<EditableImageProps> = ({
                 </DialogTitle>
               </DialogHeader>
               <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <label htmlFor="imageUrl" className="text-sm font-medium">
-                    Image URL
-                  </label>
-                  <Input
-                    id="imageUrl"
-                    value={tempUrl}
-                    onChange={(e) => setTempUrl(e.target.value)}
-                    placeholder="Enter image URL..."
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileSelect}
+                    accept="image/*"
+                    className="hidden"
+                    id="image-upload"
                   />
+                  <label
+                    htmlFor="image-upload"
+                    className="cursor-pointer flex flex-col items-center"
+                  >
+                    <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                    <span className="text-sm text-gray-600">
+                      Click to upload or drag and drop
+                    </span>
+                    <span className="text-xs text-gray-500 mt-1">
+                      PNG, JPG up to 5MB
+                    </span>
+                  </label>
                 </div>
-                {tempUrl && (
+
+                {fileStatus && (
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Preview</label>
-                    <div className="w-full h-32 rounded-md overflow-hidden bg-gray-100">
-                      <img 
-                        src={tempUrl} 
-                        alt="Preview" 
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
+                    <div className="text-sm text-gray-600 flex items-center justify-between gap-2 bg-gray-50 p-2 rounded border border-gray-100">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        {getStatusIcon(fileStatus.status)}
+                        <span className="truncate max-w-[200px]" title={fileStatus.file.name}>
+                          {fileStatus.file.name}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {fileStatus.status === 'uploading' && (
+                          <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-rust-600 transition-all duration-300"
+                              style={{ width: `${fileStatus.progress}%` }}
+                            />
+                          </div>
+                        )}
+                        <div className="flex flex-col items-end">
+                          <span className="text-xs text-gray-500 whitespace-nowrap">
+                            {formatFileSize(fileStatus.compressedSize || fileStatus.file.size)}
+                          </span>
+                          {fileStatus.compressedSize && fileStatus.originalSize && (
+                            <span className="text-xs text-green-600">
+                              {Math.round((1 - fileStatus.compressedSize / fileStatus.originalSize) * 100)}% smaller
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
+
                 <div className="flex justify-end space-x-2">
                   <Button variant="outline" onClick={handleCancel}>
                     Cancel
                   </Button>
-                  <Button onClick={handleSave} disabled={isSaving || !tempUrl}>
-                    {isSaving ? 'Saving...' : 'Save'}
+                  <Button onClick={handleUpload} disabled={isUploading || !selectedFile}>
+                    {isUploading ? 'Uploading...' : 'Upload'}
                   </Button>
                 </div>
               </div>
@@ -155,38 +316,68 @@ export const EditableImage: React.FC<EditableImageProps> = ({
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <label htmlFor="imageUrl" className="text-sm font-medium">
-                  Image URL
-                </label>
-                <Input
-                  id="imageUrl"
-                  value={tempUrl}
-                  onChange={(e) => setTempUrl(e.target.value)}
-                  placeholder="Enter image URL..."
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  accept="image/*"
+                  className="hidden"
+                  id="image-upload"
                 />
+                <label
+                  htmlFor="image-upload"
+                  className="cursor-pointer flex flex-col items-center"
+                >
+                  <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                  <span className="text-sm text-gray-600">
+                    Click to upload or drag and drop
+                  </span>
+                  <span className="text-xs text-gray-500 mt-1">
+                    PNG, JPG up to 5MB
+                  </span>
+                </label>
               </div>
-              {tempUrl && (
+
+              {fileStatus && (
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Preview</label>
-                  <div className="w-full h-32 rounded-md overflow-hidden bg-gray-100">
-                    <img 
-                      src={tempUrl} 
-                      alt="Preview" 
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
+                  <div className="text-sm text-gray-600 flex items-center justify-between gap-2 bg-gray-50 p-2 rounded border border-gray-100">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      {getStatusIcon(fileStatus.status)}
+                      <span className="truncate max-w-[200px]" title={fileStatus.file.name}>
+                        {fileStatus.file.name}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {fileStatus.status === 'uploading' && (
+                        <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-rust-600 transition-all duration-300"
+                            style={{ width: `${fileStatus.progress}%` }}
+                          />
+                        </div>
+                      )}
+                      <div className="flex flex-col items-end">
+                        <span className="text-xs text-gray-500 whitespace-nowrap">
+                          {formatFileSize(fileStatus.compressedSize || fileStatus.file.size)}
+                        </span>
+                        {fileStatus.compressedSize && fileStatus.originalSize && (
+                          <span className="text-xs text-green-600">
+                            {Math.round((1 - fileStatus.compressedSize / fileStatus.originalSize) * 100)}% smaller
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
+
               <div className="flex justify-end space-x-2">
                 <Button variant="outline" onClick={handleCancel}>
                   Cancel
                 </Button>
-                <Button onClick={handleSave} disabled={isSaving || !tempUrl}>
-                  {isSaving ? 'Saving...' : 'Save'}
+                <Button onClick={handleUpload} disabled={isUploading || !selectedFile}>
+                  {isUploading ? 'Uploading...' : 'Upload'}
                 </Button>
               </div>
             </div>
@@ -195,4 +386,4 @@ export const EditableImage: React.FC<EditableImageProps> = ({
       )}
     </div>
   );
-};
+}; 

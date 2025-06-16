@@ -9,6 +9,8 @@ import { GallerySection } from '../components/GallerySection';
 import { WishesSection } from '../components/WishesSection';
 import { MoreInfoSection } from '../components/MoreInfoSection';
 import { ContactSection } from '../components/ContactSection';
+import { JewelPartners } from '../components/JewelPartners';
+import { BackgroundMusic } from '../components/BackgroundMusic';
 import { Button } from '../components/ui/button';
 import { toast } from 'sonner';
 
@@ -34,14 +36,14 @@ const Index = () => {
       <div className="min-h-screen flex items-center justify-center bg-rust-500">
         <div className="text-center text-cream-100">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-cream-100 mx-auto mb-4"></div>
-          <p className="font-serif text-xl">Loading wedding details...</p>
+          {/* <p className="font-serif text-xl">Loading wedding details...</p> */}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
       {!isAuthenticated ? (
         <Link to="/login">
           <Button 
@@ -63,13 +65,17 @@ const Index = () => {
         </Link>
       )}
       
-      <HeroSection />
+      <div className="relative">
+        <BackgroundMusic />
+        <HeroSection />
+      </div>
       <LoveStorySection />
       <AboutWeddingSection />
       <ScheduleSection />
       <GallerySection />
       <WishesSection />
       <MoreInfoSection />
+      <JewelPartners />
       <ContactSection />
     </div>
   );

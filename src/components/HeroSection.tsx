@@ -1,26 +1,182 @@
-
 import React from 'react';
 import { useWedding } from '../contexts/WeddingContext';
 import { EditableText } from './EditableText';
-import { EditableImage } from './EditableImage';
-import { Heart, Sparkles, Star } from 'lucide-react';
+import { Heart, Sparkles, Star, Settings } from 'lucide-react';
+import { Button } from './ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { supabase } from '../lib/supabase';
+import imageCompression from 'browser-image-compression';
+import { toast } from 'sonner';
 
 export const HeroSection: React.FC = () => {
-  const { weddingData } = useWedding();
+  const { weddingData, isAuthenticated, updateWeddingData, saveData } = useWedding();
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [isUploading, setIsUploading] = React.useState(false);
+  const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const compressImage = async (file: File): Promise<File> => {
+    const options = {
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1920,
+      useWebWorker: true,
+      fileType: 'image/jpeg',
+    };
+
+    try {
+      const compressedFile = await imageCompression(file, options);
+      return compressedFile;
+    } catch (error) {
+      console.error('Compression error:', error);
+      throw new Error('Failed to compress image');
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file
+    if (!file.type.startsWith('image/')) {
+      toast.error(`${file.name} is not an image file`);
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(`${file.name} is larger than 5MB`);
+      return;
+    }
+
+    setSelectedFile(file);
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      toast.error('Please select an image');
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+
+      // Compress the image
+      const compressedFile = await compressImage(selectedFile);
+
+      // Create a unique file name
+      const fileExt = 'jpg'; // Always use jpg after compression
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = fileName;
+
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('gallery')
+        .upload(filePath, compressedFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('gallery')
+        .getPublicUrl(filePath);
+
+      // Save the URL to wedding data
+      updateWeddingData('heroBackground', publicUrl);
+      await saveData();
+      
+      setIsOpen(false);
+      toast.success('Background image updated successfully!');
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      toast.error(error.message || 'Failed to upload image');
+    } finally {
+      setIsUploading(false);
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   return (
     <section className="relative min-h-screen flex items-center justify-center text-white overflow-hidden">
       {/* Background image */}
-      <EditableImage 
-        path="heroBackground" 
-        className="absolute inset-0 w-full h-full"
-        alt="Couple background photo"
-        asBackground={true}
+      <img 
+        src={weddingData.heroBackground} 
+        alt="Hero background"
+        className="absolute inset-0 w-full h-full object-cover z-0"
       />
       
-      {/* Background overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-rust-600/70 via-rust-500/70 to-rust-700/70" ></div>
-      <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+      {/* Overlay gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-rust-600/50 via-rust-500/50 to-rust-700/50 z-10"></div>
+      
+      {/* Settings Button */}
+      {isAuthenticated && (
+        <div className="absolute top-16 right-4 z-30">
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="bg-white/90 backdrop-blur-sm shadow-md hover:bg-white h-10 w-10 p-0 rounded-full"
+              >
+                <Settings className="h-4 w-4 text-gray-600" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Change Background Image
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    accept="image/*"
+                    className="hidden"
+                    id="hero-image-upload"
+                    onChange={handleFileSelect}
+                  />
+                  <label
+                    htmlFor="hero-image-upload"
+                    className="cursor-pointer flex flex-col items-center"
+                  >
+                    <Settings className="w-8 h-8 text-gray-400 mb-2" />
+                    <span className="text-sm text-gray-600">
+                      Click to upload or drag and drop
+                    </span>
+                    <span className="text-xs text-gray-500 mt-1">
+                      PNG, JPG up to 5MB
+                    </span>
+                  </label>
+                </div>
+
+                {selectedFile && (
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={() => {
+                      setSelectedFile(null);
+                      if (fileInputRef.current) {
+                        fileInputRef.current.value = '';
+                      }
+                    }}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleUpload} disabled={isUploading}>
+                      {isUploading ? 'Uploading...' : 'Upload'}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      )}
       
       {/* Floating decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -33,7 +189,7 @@ export const HeroSection: React.FC = () => {
       </div>
       
       {/* Content */}
-      <div className="relative z-10 text-center px-4 animate-fade-in">
+      <div className="relative z-20 text-center px-4 animate-fade-in">
         <EditableText path="tagline" className="mb-6">
           <p className="font-script text-2xl md:text-3xl lg:text-4xl mb-6 text-cream-100">
             {weddingData.tagline}
@@ -48,9 +204,9 @@ export const HeroSection: React.FC = () => {
           </EditableText>
           
           <div className="font-serif text-4xl md:text-6xl lg:text-7xl text-cream-200 flex items-center justify-center space-x-4">
-            <Heart className="w-8 h-8 md:w-12 md:h-12 text-cream-300" />
+            {/* <Heart className="w-8 h-8 md:w-12 md:h-12 text-cream-300" /> */}
             <span>&</span>
-            <Heart className="w-8 h-8 md:w-12 md:h-12 text-cream-300" />
+            {/* <Heart className="w-8 h-8 md:w-12 md:h-12 text-cream-300" /> */}
           </div>
           
           <EditableText path="coupleNames.bride">
