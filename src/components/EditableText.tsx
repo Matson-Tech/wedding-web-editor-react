@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useWedding } from '../contexts/WeddingContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
@@ -43,7 +42,6 @@ export const EditableText: React.FC<EditableTextProps> = ({
       updateWeddingData(path, tempValue);
       await saveData();
       setIsOpen(false);
-      toast.success('Content updated successfully!');
     } catch (error) {
       toast.error('Failed to save changes');
       console.error('Save error:', error);

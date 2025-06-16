@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useWedding } from '../contexts/WeddingContext';
 import { HeroSection } from '../components/HeroSection';
@@ -10,9 +10,24 @@ import { WishesSection } from '../components/WishesSection';
 import { MoreInfoSection } from '../components/MoreInfoSection';
 import { ContactSection } from '../components/ContactSection';
 import { Button } from '../components/ui/button';
+import { toast } from 'sonner';
 
 const Index = () => {
   const { isLoading, isAuthenticated } = useWedding();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      toast.info('Tap or hover over content to edit', {
+        duration: 5000,
+        position: 'top-center',
+        dismissible: true,
+        action: {
+          label: 'Got it',
+          onClick: () => toast.dismiss()
+        }
+      });
+    }
+  }, [isAuthenticated]);
 
   if (isLoading) {
     return (

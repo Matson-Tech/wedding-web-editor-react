@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useWedding } from '../contexts/WeddingContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
@@ -42,7 +41,6 @@ export const EditableImage: React.FC<EditableImageProps> = ({
       updateWeddingData(path, tempUrl);
       await saveData();
       setIsOpen(false);
-      toast.success('Image updated successfully!');
     } catch (error) {
       toast.error('Failed to save changes');
       console.error('Save error:', error);

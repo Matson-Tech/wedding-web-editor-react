@@ -251,6 +251,20 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   useEffect(() => {
     checkAuth();
+
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session);
+      setIsAuthenticated(!!session);
+      if (session?.user) {
+        setCurrentUserId(session.user.id);
+        loadData(session.user.id);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const checkAuth = async () => {
@@ -484,7 +498,6 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (edgeResult.error) throw edgeResult.error;
       
       console.log('Data saved successfully');
-      toast.success('Changes saved successfully');
     } catch (error) {
       console.error('Failed to save data:', error);
       toast.error('Failed to save changes');
@@ -495,8 +508,13 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Auto-save when wedding data changes
   useEffect(() => {
     if (isAuthenticated && currentUserId && !isLoading) {
-      const saveTimeout = setTimeout(() => {
-        saveData();
+      const saveTimeout = setTimeout(async () => {
+        try {
+          await saveData();
+          toast.success('Changes saved successfully');
+        } catch (error) {
+          // Error toast is already handled in saveData
+        }
       }, 1000); // Debounce save for 1 second
 
       return () => clearTimeout(saveTimeout);
